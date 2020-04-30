@@ -5,6 +5,11 @@ from rest_framework.test import APIClient
 from player.models import Artist, Album, Track
 
 
+def get_response(path):
+    response = APIClient().get(path)
+    return json.loads(response.content)
+
+
 class ArtistTestCase(TestCase):
 
     def setUpTestData():
@@ -15,17 +20,16 @@ class ArtistTestCase(TestCase):
         Artist.objects.create(name='Metallica')
         Artist.objects.create(name='Weezer')
 
+
     def test_list(self):
-        response = APIClient().get('/api/artist/')
-        self.assertEqual(json.loads(response.content), [
+        response = get_response('/api/artist/')
+        self.assertEqual(response.get('results'), [
                          {'pk': 1, 'name': 'Metallica'}, {'pk': 2, 'name': 'Weezer'}])
 
     def test_retrieve(self):
-        response = APIClient().get('/api/artist/1/')
-        self.assertEqual(json.loads(response.content), {
-                         'pk': 1, 'name': 'Metallica'})
-        response = APIClient().get('/api/artist/2/')
-        self.assertEqual(json.loads(response.content),
+        self.assertEqual(get_response('/api/artist/1/'),
+                         {'pk': 1, 'name': 'Metallica'})
+        self.assertEqual(get_response('/api/artist/2/'),
                          {'pk': 2, 'name': 'Weezer'})
 
     def test_post(self):
@@ -41,3 +45,28 @@ class ArtistTestCase(TestCase):
         self.assertEqual(response.status_code, 201)
         response = APIClient().put('/api/artist/3/', {'name': 'The Strokes'})
         self.assertEqual(response.status_code, 200)
+
+    def test_sorting(self):
+        response = get_response('/api/artist/?ordering=-name')
+        self.assertEqual(response.get('results'), [
+                         {'pk': 2, 'name': 'Weezer'}, {'pk': 1, 'name': 'Metallica'}])
+        response = get_response('/api/artist/?ordering=name')
+        self.assertEqual(response.get('results'), [
+                         {'pk': 1, 'name': 'Metallica'}, {'pk': 2, 'name': 'Weezer'}])
+
+    def test_pagination(self):
+        response = get_response('/api/artist/?limit=1&offset=0')
+        self.assertEqual(response['count'], 2)
+        next_page = response['next']
+        test_server_prefix = 'http://testserver'
+        self.assertTrue(next_page.startswith(test_server_prefix))
+        next_page = next_page[len(test_server_prefix):]
+        self.assertEqual(response['results'], [{'pk': 1, 'name': 'Metallica'}])
+
+        response = get_response(next_page)
+        self.assertEqual(response['count'], 2)
+        self.assertEqual(response['next'], None)
+        self.assertEqual(response['results'], [{'pk': 2, 'name': 'Weezer'}])
+
+
+

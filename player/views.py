@@ -1,3 +1,5 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 from rest_framework.generics import GenericAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
@@ -9,6 +11,9 @@ from .serializers import ArtistSerializer
 class ArtistView(ListModelMixin, GenericAPIView):
     queryset = Artist.objects.all()
     serializer_class = ArtistSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filter_fields = ['name']
+    ordering_fields = '__all__'
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -36,3 +41,5 @@ class ArtistView(ListModelMixin, GenericAPIView):
 class SingleArtistView(RetrieveUpdateDestroyAPIView):
     queryset = Artist.objects.all()
     serializer_class = ArtistSerializer
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ['name']
