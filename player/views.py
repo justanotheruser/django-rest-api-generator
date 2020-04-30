@@ -1,5 +1,38 @@
-from django.http import HttpResponse
+from rest_framework.generics import GenericAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.mixins import ListModelMixin
+from rest_framework.response import Response
+
+from .models import Artist
+from .serializers import ArtistSerializer
 
 
-def index(request):
-    return HttpResponse("User home page")
+class ArtistView(ListModelMixin, GenericAPIView):
+    queryset = Artist.objects.all()
+    serializer_class = ArtistSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request):
+        serializer = ArtistSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            artist_saved = serializer.save()
+        return Response({'pk': format(artist_saved.pk)}, status=201)
+
+    def put(self, request, pk):
+        artist = get_object_or_404(Artist.objects.all(), pk=pk)
+        serializer = ArtistSerializer(
+            instance=artist, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            artist_saved = serializer.save()
+        return Response({})
+
+    def delete(self, request, pk):
+        artist = get_object_or_404(Article.objects.all(), pk=pk)
+        artist.delete()
+        return Response({}, status=204)
+
+
+class SingleArtistView(RetrieveUpdateDestroyAPIView):
+    queryset = Artist.objects.all()
+    serializer_class = ArtistSerializer

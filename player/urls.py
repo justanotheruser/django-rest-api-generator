@@ -1,7 +1,8 @@
 from django.urls import path
 
-from . import views
+from .views import ArtistView, SingleArtistView
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('artist/', ArtistView.as_view()),
+    path('artist/<int:pk>/', SingleArtistView.as_view()),
 ]
