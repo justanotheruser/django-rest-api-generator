@@ -3,8 +3,7 @@ from rest_framework import serializers
 from player.models import Artist, Album, Track
 
 
-class ArtistSerializer(serializers.ModelSerializer):
-
+class ArtistSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Artist
         fields = '__all__'
@@ -13,14 +12,15 @@ class ArtistSerializer(serializers.ModelSerializer):
         return Artist.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        instance.album = validated_data.get('album', instance.album)
+        instance.track = validated_data.get('track', instance.track)
         instance.id = validated_data.get('id', instance.id)
         instance.name = validated_data.get('name', instance.name)
         instance.save()
         return instance
 
 
-class AlbumSerializer(serializers.ModelSerializer):
-
+class AlbumSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Album
         fields = '__all__'
@@ -29,6 +29,7 @@ class AlbumSerializer(serializers.ModelSerializer):
         return Album.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        instance.track = validated_data.get('track', instance.track)
         instance.id = validated_data.get('id', instance.id)
         instance.title = validated_data.get('title', instance.title)
         instance.release_date = validated_data.get('release_date', instance.release_date)
@@ -37,8 +38,7 @@ class AlbumSerializer(serializers.ModelSerializer):
         return instance
 
 
-class TrackSerializer(serializers.ModelSerializer):
-
+class TrackSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Track
         fields = '__all__'
@@ -54,3 +54,4 @@ class TrackSerializer(serializers.ModelSerializer):
         instance.album = validated_data.get('album', instance.album)
         instance.save()
         return instance
+

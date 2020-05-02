@@ -20,17 +20,16 @@ class ArtistTestCase(TestCase):
         Artist.objects.create(name='Metallica')
         Artist.objects.create(name='Weezer')
 
-
     def test_list(self):
         response = get_response('/api/artist/')
         self.assertEqual(response.get('results'), [
-                         {'pk': 1, 'name': 'Metallica'}, {'pk': 2, 'name': 'Weezer'}])
+                         {'id': 1, 'name': 'Metallica'}, {'id': 2, 'name': 'Weezer'}])
 
     def test_retrieve(self):
         self.assertEqual(get_response('/api/artist/1/'),
-                         {'pk': 1, 'name': 'Metallica'})
+                         {'id': 1, 'name': 'Metallica'})
         self.assertEqual(get_response('/api/artist/2/'),
-                         {'pk': 2, 'name': 'Weezer'})
+                         {'id': 2, 'name': 'Weezer'})
 
     def test_post(self):
         response = APIClient().post('/api/artist/', {'name': 'The Strokes'})
@@ -49,10 +48,10 @@ class ArtistTestCase(TestCase):
     def test_sorting(self):
         response = get_response('/api/artist/?ordering=-name')
         self.assertEqual(response.get('results'), [
-                         {'pk': 2, 'name': 'Weezer'}, {'pk': 1, 'name': 'Metallica'}])
+                         {'id': 2, 'name': 'Weezer'}, {'id': 1, 'name': 'Metallica'}])
         response = get_response('/api/artist/?ordering=name')
         self.assertEqual(response.get('results'), [
-                         {'pk': 1, 'name': 'Metallica'}, {'pk': 2, 'name': 'Weezer'}])
+                         {'id': 1, 'name': 'Metallica'}, {'id': 2, 'name': 'Weezer'}])
 
     def test_pagination(self):
         response = get_response('/api/artist/?limit=1&offset=0')
@@ -61,12 +60,9 @@ class ArtistTestCase(TestCase):
         test_server_prefix = 'http://testserver'
         self.assertTrue(next_page.startswith(test_server_prefix))
         next_page = next_page[len(test_server_prefix):]
-        self.assertEqual(response['results'], [{'pk': 1, 'name': 'Metallica'}])
+        self.assertEqual(response['results'], [{'id': 1, 'name': 'Metallica'}])
 
         response = get_response(next_page)
         self.assertEqual(response['count'], 2)
         self.assertEqual(response['next'], None)
-        self.assertEqual(response['results'], [{'pk': 2, 'name': 'Weezer'}])
-
-
-
+        self.assertEqual(response['results'], [{'id': 2, 'name': 'Weezer'}])

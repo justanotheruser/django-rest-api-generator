@@ -1,0 +1,19 @@
+{% load model_tags %}from rest_framework import serializers
+
+from {{ app }}.models import {{ model_names|join:", "}}
+{% for model in models %}
+
+class {{ model|name }}Serializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = {{ model|name }}
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return {{ model|name }}.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        {% for field in model|fields %}instance.{{ field.name }} = validated_data.get('{{ field.name }}', instance.{{ field.name }})
+        {% endfor %}instance.save()
+        return instance
+{% endfor %}
