@@ -66,3 +66,16 @@ class ArtistTestCase(TestCase):
         self.assertEqual(response['count'], 2)
         self.assertEqual(response['next'], None)
         self.assertEqual(response['results'], [{'id': 2, 'name': 'Weezer'}])
+
+
+class AlbumTestCase(TestCase):
+
+    def setUp(self):
+        self.neil = Artist.objects.create(name='Neil Cicierega')
+        album = Album.objects.create(
+            title='Mouth Sounds', release_date='2014-04-27', artist=self.neil)
+
+    def test_filtering_by_artist(self):
+        response = get_response(f'/api/album/?artist={self.neil.id}')
+        self.assertEqual(response.get('results'), [
+                         {'artist': 1, 'id': 1, 'release_date': '2014-04-27', 'title': 'Mouth Sounds'}])
