@@ -1,0 +1,9 @@
+{% load string_tags %}from django.urls import path
+
+from {{ app }}.views import {{ models|addsuffix:"View"|join:", "}}
+from {{ app }}.views import {{ models|addprefix:"Single"|addsuffix:"View"|join:", "}}
+
+urlpatterns = [{% for model in models %}
+    path('{{ model|lower }}/', {{ model }}View.as_view()),
+    path('{{ model|lower }}/<int:pk>/', Single{{ model }}View.as_view()),{% endfor %}
+]

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from player.models import Artist, Album, Track
 from player.serializers import ArtistSerializer, AlbumSerializer, TrackSerializer
-from player.filters import AlbumFilter
+
 
 class ArtistView(ListModelMixin, GenericAPIView):
     queryset = Artist.objects.all()

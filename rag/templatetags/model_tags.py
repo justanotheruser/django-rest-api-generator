@@ -9,7 +9,3 @@ def name(obj):
 @register.filter
 def fields(obj):
     return obj._meta.concrete_fields
-
-@register.filter
-def addsuffix(strList, suffix):
-    return [s + suffix for s in strList]
