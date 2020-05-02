@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -72,10 +73,39 @@ class AlbumTestCase(TestCase):
 
     def setUp(self):
         self.neil = Artist.objects.create(name='Neil Cicierega')
-        album = Album.objects.create(
-            title='Mouth Sounds', release_date='2014-04-27', artist=self.neil)
+        self.vulfpeck = Artist.objects.create(name='Vulfpeck')
+        Album.objects.create(title='Mouth Sounds',
+                             release_date='2014-04-27', artist=self.neil)
+        Album.objects.create(title='Thrill of the Arts',
+                             release_date='2015-10-01', artist=self.vulfpeck)
 
     def test_filtering_by_artist(self):
         response = get_response(f'/api/album/?artist={self.neil.id}')
         self.assertEqual(response.get('results'), [
                          {'artist': 1, 'id': 1, 'release_date': '2014-04-27', 'title': 'Mouth Sounds'}])
+        response = get_response(f'/api/album/?artist={self.vulfpeck.id}')
+        self.assertEqual(response.get('results'), [
+                         {'artist': 2, 'id': 2, 'release_date': '2015-10-01', 'title': 'Thrill of the Arts'}])
+
+
+class TrackTestCase(TestCase):
+
+    def setUp(self):
+        self.nina = Artist.objects.create(name='Nina Simone')
+        self.muse = Artist.objects.create(name='Muse')
+        Track.objects.create(title='Feeling good',
+                             length=400, artist=self.nina)
+        Track.objects.create(title='Feeling good',
+                             length=400, artist=self.muse)
+        Track.objects.create(title='Starlight', length=400, artist=self.muse)
+
+    def test_filtering_by_multiple_fields(self):
+        title = urllib.parse.quote('Feeling good')
+        response = get_response(f'/api/track/?title={title}&ordering=id')
+        self.assertEqual(response.get('results'), [
+                         {"id": 1, "title": "Feeling good",
+                             "length": 400, "artist": 1, "album": None},
+                         {"id": 2, "title": "Feeling good", "length": 400, "artist": 2, "album": None}])
+        response = get_response(f'/api/track/?title={title}&artist={self.muse.id}')
+        self.assertEqual(response.get('results'), [
+                         {"id": 2, "title": "Feeling good", "length": 400, "artist": self.muse.id, "album": None}])
