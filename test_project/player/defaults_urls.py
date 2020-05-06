@@ -1,0 +1,3 @@
+urlpatterns = [
+    # To be generated
+]

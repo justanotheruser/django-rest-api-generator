@@ -1,5 +1,6 @@
 import json
 import urllib.parse
+from time import sleep
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -12,10 +13,6 @@ def get_response(path):
 
 
 class ArtistTestCase(TestCase):
-
-    def setUpTestData():
-        User.objects.create_user(
-            'john', 'lennon@thebeatles.com', 'johnpassword')
 
     def setUp(self):
         Artist.objects.create(name='Metallica')
